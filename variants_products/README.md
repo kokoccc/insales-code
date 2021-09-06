@@ -1,6 +1,6 @@
 # Liquid – варианты как отдельные товары с разными URL
 
-*[← InSales Stuff](/)*
+*[← InSales Stuff](https://github.com/kokoccc/insales-code)*
 
 В InSales у каждого товара могут быть варианты с различными свойствами: размер, цвет и т.п.
 

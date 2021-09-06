@@ -1,6 +1,6 @@
 # Liquid – вывод элементов массива по N элементов за раз
 
-*[← InSales Stuff](/)*
+*[← InSales Stuff](https://github.com/kokoccc/insales-code)*
 
 Проходимся по массиву и получаем на каждой итерации не один элемент, а несколько.
 
