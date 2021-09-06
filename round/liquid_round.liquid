@@ -1,0 +1,71 @@
+{%- capture _round -%}
+  {% assign round = round | default: 2 %}
+  {% assign round_result = num | round: round %}
+  {% assign num_delimiter = num_delimiter | default: '.' %}
+  {% assign class_delimiter = class_delimiter | default: false %}
+  {% assign num_arr = round_result | split: num_delimiter %}
+  {% assign trailing = trailing | default: false %}
+
+
+  {% if trailing %}
+    {% if num_arr.size == 1 and round > 0 %}
+      {% assign round_result = round_result | append: num_delimiter %}
+
+      {% for i in (1..round) %}
+        {% assign round_result = round_result | append: '0' %}
+      {% endfor %}
+    {% elsif round > num_arr[1].size %}
+      {% assign round_diff = round | minus: num_arr[1].size %}
+
+      {% for i in (1..round_diff) %}
+        {% assign round_result = round_result | append: '0' %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+
+
+  {% if class_delimiter %}
+    {% assign result_arr = round_result | split: num_delimiter %}
+    {% assign result_integer = result_arr[0] | split: '' %}
+    {% assign result_decimal = result_arr[1] %}
+    {% assign result_integer_spaced = '' %}
+
+    {% for i in (1..result_integer.size) %}
+      {% assign result_integer_spaced = result_integer_spaced | prepend: result_integer[forloop.rindex0] %}
+      {% assign modulo = i | modulo: 3 %}
+
+      {% if modulo == 0 %}
+        {% assign result_integer_spaced = result_integer_spaced | prepend: class_delimiter %}
+      {% endif %}
+    {% endfor %}
+
+    {% assign round_result = result_integer_spaced | replace: '- ', '-' %}
+
+    {% if result_decimal.size > 0 %}
+      {% assign round_result = round_result | append: num_delimiter | append: result_decimal %}
+    {% endif %}
+  {% endif %}
+
+
+  {% if money %}
+    {% assign currency_current = account.site_currencies | where: 'current', true | first %}
+    {{ currency_current.format_string | replace: '%n', round_result | replace: '%u', currency_current.unit }}
+  {% else %}
+    {{ round_result }}
+  {% endif %}
+
+  {% assign round = nil %}
+  {% assign round_result = nil %}
+  {% assign num_delimiter = nil %}
+  {% assign class_delimiter = nil %}
+  {% assign num_arr = nil %}
+  {% assign trailing = nil %}
+  {% assign result_arr = nil %}
+  {% assign result_integer = nil %}
+  {% assign result_decimal = nil %}
+  {% assign result_integer_spaced = nil %}
+  {% assign modulo = nil %}
+  {% assign currency_current = nil %}
+{%- endcapture -%}
+
+{{ _round | strip | strip_newlines | remove: '  ' }}

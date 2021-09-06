@@ -57,7 +57,7 @@
   - arr — сам массив
   - step — количество элементов за проход
 
-В нашем примере сниппет называется `images_recursive`:
+В нашем примере сниппет называется `images_recursive.liquid`:
 ```liquid
 {% include 'images_recursive', arr: product.images, step: 3 %}
 ```
