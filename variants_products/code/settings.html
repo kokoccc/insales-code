@@ -1,0 +1,64 @@
+<fieldset>
+  <legend>Варианты как товары</legend>
+  <p style="padding: 10px 15px;">
+    Автор: <a href="https://t.me/kokoc">@kokoc</a> / <a href="https://github.com/kokoccc/insales-stuff">GitHub</a>
+  </p>
+  <table>
+    <tr>
+      <td><label for="cv">Включить</label></td>
+      <td>
+        <input name="cv" id="cv" type="checkbox">
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_method">Брать товары из…</label></td>
+      <td>
+        <select name="cv_method" id="cv_method">
+          <option value="default">категории в доп. поле</option>
+          <option value="canonical">канонической категории</option>
+          <option value="related">сопутствующих товаров</option>
+          <option value="similar">аналогичных товаров</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_properties">Список параметров, применяющихся по умолчанию, через разделитель " | ", например: "Объем памяти | Размер | Цвет" (не применяется, если пусто или если в доп. поле категории прописан свой набор параметров)</label></td>
+      <td>
+        <input name="cv_properties" id="cv_properties" type="text">
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_grid">Располагать кнопки</label></td>
+      <td>
+        <select name="cv_grid" id="cv_grid">
+          <option value="flex">по ширине контента</option>
+          <option value="grid">ровной сеткой</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_image_cover">Растягивать изображения</label></td>
+      <td>
+        <input name="cv_image_cover" id="cv_image_cover" type="checkbox">
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_color_cover">Растягивать цвета</label></td>
+      <td>
+        <input name="cv_color_cover" id="cv_color_cover" type="checkbox">
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_show_unavailable">Активировать кнопки для товаров с нулевым остатком (если показ таких товаров не отключен в бэк-офисе)</label></td>
+      <td>
+        <input name="cv_show_unavailable" id="cv_show_unavailable" type="checkbox">
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cv_counter">Добавлять порядковый номер перед названиями параметров, если их больше 1</label></td>
+      <td>
+        <input name="cv_counter" id="cv_counter" type="checkbox">
+      </td>
+    </tr>
+  </table>
+</fieldset>

@@ -1,0 +1,11 @@
+{%- assign result = source | strip_newlines | strip -%}
+{%- for i in (0..99) -%}
+	{%- if result contains '	' -%}
+		{%- assign result = result | replace: '	', ' ' -%}
+	{%- elsif result contains '  ' -%}
+		{%- assign result = result | replace: '  ', ' ' -%}
+	{%- else -%}
+		{%- break -%}
+	{%- endif -%}
+{%- endfor -%}
+{{ result | replace: ' ::', '::' | replace: ':: ', '::' | replace: ' ##', '##' | replace: '## ', '##' | replace: ' ||', '||' | replace: '|| ', '||' | replace: ' |||', '|||' | replace: '||| ', '|||' }}

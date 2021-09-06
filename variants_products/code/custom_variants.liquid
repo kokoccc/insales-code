@@ -1,0 +1,177 @@
+{% comment %}
+
+Модуль для вывода товаров с параметрами в виде вариантов
+https://github.com/kokoccc/insales-stuff/tree/master/variants_products
+
+{% endcomment %}
+
+{% if settings.cv %}
+	{% assign cv_d1 = '::' %}
+	{% assign cv_d2 = '##' %}
+	{% assign cv_d3 = '||' %}
+	{% assign cv_d4 = '|||' %}
+
+	{% case settings.cv_method %}
+		{% when 'default' %}
+			{% assign cv_collection = collections[product.fields.cv_collection.value] | default: product.canonical_collection %}
+			{% assign cv_products = cv_collection.products %}
+		{% when 'canonical' %}
+			{% assign cv_collection = product.canonical_collection %}
+			{% assign cv_products = cv_collection.products %}
+		{% when 'related' %}
+			{% assign cv_products = product.related_products %}
+		{% when 'similar' %}
+			{% assign cv_products = product.similar_products %}
+	{% endcase %}
+
+	{% capture cache_cv_key %}cache_cv_key_{{ collections.last_updated_at }}_{{ settings._settings_version }}_{{ cv_products | map: 'updated_at' }}_{{ product.id }}_{{ language.locale }}{% endcapture %}
+
+	{% cache cache_cv_key %}
+		{% if cv_products.size > 0 %}
+			{% assign cv_properties = cv_collection.fields.cv_properties.value | default: settings.cv_properties %}
+			{% assign cv_properties_arr = cv_properties | split: ' | ' %}
+
+			{% capture cv_properties_all %}
+				{% if settings.cv_method == 'default' or settings.cv_method == 'canonical' %}
+
+					{% for property in cv_collection.properties %}
+						{% assign property_valid = false %}
+						{% for prop in cv_properties_arr %}
+							{% if prop == property.title %}
+								{% assign property_valid = true %}
+								{% break %}
+							{% endif %}
+						{% endfor %}
+						{% unless property_valid %} {% continue %} {% endunless %}
+
+						{{ property.title }} {{ cv_d1 }}
+						{{ property.handle }} {{ cv_d1 }}
+						{% for char in property.characteristics %}
+							{{ char.name }}
+							{% unless forloop.last %} {{ cv_d2 }} {% endunless %}
+						{% endfor %} {{ cv_d1 }}
+						{{ product.properties[property.handle].characteristics.first.name }}
+						{% unless forloop.last %} {{ cv_d3 }} {% endunless %}
+					{% endfor %}
+
+				{% else %}
+
+					{% for prop in cv_properties_arr %}
+						{% assign prop_valid = false %}
+						{% assign prop_chars = '' %}
+						{% assign prop_handle = nil %}
+
+						{% capture property_chars %}
+							{% for product in cv_products %}
+								{% assign product_prop = product.properties | where: 'title', prop | first %}
+								{% if product_prop %}
+									{% assign prop_valid = true %}
+									{% assign prop_handle = product_prop.handle %}
+									{% assign prop_chars = prop_chars | append: product_prop.characteristics.first.name | append: cv_d2 %}
+								{% else %}
+									{% continue %}
+								{% endif %}
+							{% endfor %}
+						{% endcapture %}
+
+						{% unless prop_valid %} {% continue %} {% endunless %}
+						{{ prop }} {{ cv_d1 }}
+						{{ prop_handle }} {{ cv_d1 }}
+						{{ prop_chars | split: cv_d2 | uniq | join: cv_d2 }} {{ cv_d1 }}
+						{{ product.properties[prop_handle].characteristics.first.name }}
+						{% unless forloop.last %} {{ cv_d3 }} {% endunless %}
+					{% endfor %}
+
+				{% endif %}
+			{% endcapture %}
+			{% capture cv_properties_all %}{% include 'whitespace', source: cv_properties_all %}{% endcapture %}
+			{% assign cv_properties_all = cv_properties_all | split: cv_d3 %}
+
+			{% if cv_properties_all %}
+				<div class="cv">
+					{% for property in cv_properties_all %}
+
+					{% assign property_index = forloop.index0 %}
+					{% assign property_arr = property | split: cv_d1 %}
+					{% assign property_title = property_arr[0] %}
+					{% assign property_handle = property_arr[1] %}
+					{% assign property_values = property_arr[2] | split: cv_d2 %}
+					{% assign property_current_value = property_arr[3] %}
+
+					{% capture cv_properties_other %}
+						{% for prop in cv_properties_all %}
+							{% if prop == property %} {% continue %} {% endif %}
+
+							{% assign prop_arr = prop | split: cv_d1 %}
+							{% assign prop_handle = prop_arr[1] %}
+							{% assign prop_current_value = prop_arr[3] %}
+
+							{{ prop_handle }}{{ cv_d1 }}{{ prop_current_value }}
+							{% unless forloop.last %} {{ cv_d2 }} {% endunless %}
+						{% endfor %}
+					{% endcapture %}
+					{% capture cv_properties_other %}{% include 'whitespace', source: cv_properties_other %}{% endcapture %}
+					{% assign cv_properties_other = cv_properties_other | split: cv_d2 %}
+
+					<div class="cv_property">
+						<div class="cv_title {% if settings.cv_counter %}cv_title--counter{% endif %}">{{ property_title }}</div>
+
+						<div class="cv_list {% if settings.cv_grid == 'grid' %}grid{% endif %}">
+							{% for value in property_values %}
+								{% if value == property_current_value %}
+									{% include 'custom_variants_item', class: 'active', product_id: product.id %}
+								{% else %}
+									{% assign cv_product = nil %}
+
+									{% unless settings.cv_show_unavailable %}
+										{% assign cv_products = cv_products | where: 'available', true %}
+									{% endunless %}
+
+									{% for product in cv_products %}
+										{% assign product_current_prop_value = product.properties[property_handle].characteristics.first.name %}
+										{% if product_current_prop_value != value %}
+											{% continue %}
+										{% endif %}
+
+										{% if cv_properties_other.size > 0 %}
+											{% for prop in cv_properties_other %}
+												{% assign prop_arr = prop | split: cv_d1 %}
+												{% assign prop_handle = prop_arr[0] %}
+												{% assign prop_value = prop_arr[1] %}
+
+												{% assign product_prop_value = product.properties[prop_handle].characteristics.first.name %}
+												{% if product_prop_value != prop_value %}
+													{% break %}
+												{% endif %}
+
+												{% if forloop.last %}
+													{% assign cv_product = product %}
+												{% endif %}
+											{% endfor %}
+										{% else %}
+											{% assign cv_product = product %}
+										{% endif %}
+
+										{% if cv_product %} {% break %} {% endif %}
+									{% endfor %}
+
+									{% if cv_product %}
+										{% if cv_product.available or settings.cv_show_unavailable %}
+											{% include 'custom_variants_item', el: 'link' %}
+										{% else %}
+											{% include 'custom_variants_item', class: 'unavailable' %}
+										{% endif %}
+									{% else %}
+										{% include 'custom_variants_item', class: 'disabled' %}
+									{% endif %}
+
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		{% endif %}
+	{% endcache %}
+{% endif %}

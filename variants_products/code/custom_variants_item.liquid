@@ -1,0 +1,69 @@
+{% capture cv_button %}
+	{% assign cv_block_list = block_lists.with_template['cv'] | where: 'name', property_title | first %}
+	{% assign cv_block = cv_block_list.blocks | where: 'title', value | first %}
+
+	{% assign cv_type = nil %}
+	{% assign cv_cover = nil %}
+	{% assign cv_style = nil %}
+
+	{% if cv_block.image != blank %}
+		{% assign cv_type = 'is-image' %}
+		{% assign cv_cover = settings.cv_image_cover %}
+		{% capture cv_style %}
+			style="background-image: url({{ cv_block.image }});"
+		{% endcapture %}
+	{% elsif cv_block.color != blank %}
+		{% assign cv_type = 'is-color' %}
+		{% assign cv_cover = settings.cv_color_cover %}
+		{% capture cv_style %}
+			style="background-color: {{ cv_block.color }};"
+		{% endcapture %}
+	{% endif %}
+
+	{% capture cv_cover_html %}
+		{% unless cv_cover %}
+			{% if cv_type == 'is-image' %}
+				<span class="cv_image" {{ cv_style }}></span>
+			{% elsif cv_type == 'is-color' %}
+				<span class="cv_color" {{ cv_style }}></span>
+			{% endif %}
+		{% endunless %}
+
+		<span class="cv_text {% if cv_cover %}cv_text--cover{% endif %}">{{ value }}</span>
+	{% endcapture %}
+
+	{% capture cv_item %}
+		{% case el %}
+			{% when 'link' %}
+
+				<a
+					class="cv_link {{ class }} {{ cv_type }} {% if cv_cover %}cv_link--cover{% endif %}"
+					href="{{ cv_product.url }}"
+					title="{{ cv_product.title }}"
+					data-product-id="{{ cv_product.id }}"
+					{% if cv_cover %} {{ cv_style }} {% endif %}
+				>
+					{{ cv_cover_html }}
+				</a>
+
+			{% else %}
+
+				<button
+					class="cv_link {{ class }} {{ cv_type }} {% if cv_cover %}cv_link--cover{% endif %}"
+					{% if cv_product %} data-product-id="{{ cv_product.id }}" {% endif %}
+					type="button"
+					{% if cv_cover %} {{ cv_style }} {% endif %}
+				>
+					{{ cv_cover_html }}
+				</button>
+
+		{% endcase %}
+	{% endcapture %}
+
+	<li class="cv_item {{ cv_type }} {{ class }}" data-property-title="{{ property_title }}">
+		{{ cv_item }}
+	</li>
+{% endcapture %}
+
+{% capture cv_button %}{% include 'whitespace', source: cv_button %}{% endcapture %}
+{{ cv_button }}
